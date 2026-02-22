@@ -36,7 +36,7 @@ const AddPackage = () => {
         try {
             await api.post(`/packages/${vendorId}`, payload);
 
-            alert("✅ Package created successfully");
+            alert("Package created successfully");
 
             setPkg({
                 packageName: '',
@@ -45,7 +45,6 @@ const AddPackage = () => {
                 imageUrl: ''
             });
         } catch (err) {
-            console.error("CREATE PACKAGE ERROR:", err);
             alert(err.response?.data || "Package creation failed");
         }
     };

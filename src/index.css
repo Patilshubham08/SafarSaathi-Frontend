@@ -1,9 +1,85 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Sora:wght@100..800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-    font-family: 'Poppins', sans-serif;
+:root {
+  --mmt-blue: #008cff;
+  --mmt-dark-blue: #005eff;
+  --mmt-bg: #f2f2f2;
+}
+
+
+@layer base {
+  body {
+    @apply antialiased text-gray-900 bg-gray-50;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-stylish {
+    font-family: 'Sora', sans-serif;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl;
+  }
+
+  .glass-dark {
+    @apply bg-black/30 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+
+  .nav-glass {
+    @apply bg-white/60 backdrop-blur-xl border-b border-white/20;
+  }
+}
+
+@layer utilities {
+  .animate-slow-zoom {
+    animation: slow-zoom 25s linear infinite alternate;
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+
+  .delay-100 {
+    animation-delay: 0.1s;
+  }
+
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+
+  .delay-300 {
+    animation-delay: 0.3s;
+  }
+}
+
+@keyframes slow-zoom {
+  from {
+    transform: scale(1);
+  }
+
+  to {
+    transform: scale(1.15);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

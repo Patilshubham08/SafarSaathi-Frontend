@@ -1,18 +1,21 @@
 import { Routes, Route } from "react-router-dom";
-import Navbar from "./components/layout/Navbar";
+import MainLayout from "./layouts/MainLayout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import CustomerDashboard from "./pages/customer/CustomerDashboard";
 import VendorDashboard from "./pages/vendor/VendorDashboard";
 import Home from "./pages/Public/Home";
+import PackageList from "./pages/customer/PackageList";
+import PackageDetail from "./pages/customer/PackageDetail";
 
 function App() {
   return (
-    <>
-      <Navbar />   {/* ✅ THIS IS THE FIX */}
-      <Routes>
+    <Routes>
+      <Route element={<MainLayout />}>
         <Route path="/" element={<Home />} />
+        <Route path="/packages" element={<PackageList />} />
+        <Route path="/packages/:id" element={<PackageDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -33,8 +36,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
-    </>
+      </Route>
+    </Routes>
   );
 }
 

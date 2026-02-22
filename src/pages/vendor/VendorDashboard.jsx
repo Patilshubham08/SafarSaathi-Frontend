@@ -1,22 +1,24 @@
 import React, { useState } from 'react';
 import { Routes, Route, Link, Outlet } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/axios';
+import { LayoutDashboard, PlusCircle, ShoppingBag, PieChart, Loader2 } from 'lucide-react';
 
-/* ================= OVERVIEW ================= */
 const VendorOverview = () => (
-    <div className="bg-white shadow rounded-lg p-6">
-        <h3 className="text-xl font-bold mb-2">Vendor Portal</h3>
-        <p className="text-gray-500">Manage your travel packages.</p>
+    <div className="bg-black/20 backdrop-blur-xl border border-white/10 p-10 rounded-[3rem] text-white">
+        <h3 className="text-3xl font-stylish font-black mb-4">Vendor Command Center</h3>
+        <p className="text-white/60 text-lg font-medium">Welcome back! Here you can craft extraordinary journeys.</p>
     </div>
 );
 
-/* ================= CREATE PACKAGE (DB MATCHING) ================= */
 const CreatePackage = () => {
+    const [loading, setLoading] = useState(false);
     const [pkg, setPkg] = useState({
         packageName: '',
         description: '',
         price: '',
-        imageUrl: ''
+        imageUrl: '',
+        highlights: '',
+        restaurants: ''
     });
 
     const handleChange = (e) => {
@@ -25,118 +27,60 @@ const CreatePackage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
 
         const vendorId = localStorage.getItem("userId");
-        if (!vendorId) {
-            alert("Vendor not logged in");
-            return;
-        }
+        const payload = { ...pkg, price: Number(pkg.price) };
 
-        const payload = {
-            packageName: pkg.packageName,
-            description: pkg.description,
-            price: Number(pkg.price),
-            imageUrl: pkg.imageUrl
-        };
-
-        console.log("SENDING:", payload);
 
         try {
-            const token = localStorage.getItem("token");
-
-await axios.post(
-    `http://localhost:8080/api/packages/${vendorId}`,
-    payload,
-    {
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
-        }
-    }
-);
-
-
-            alert("✅ Package created successfully");
-            setPkg({ packageName: '', description: '', price: '', imageUrl: '' });
+            const resp = await api.post(`/packages/${vendorId}`, payload);
+            alert("Package created!");
+            setPkg({ packageName: '', description: '', price: '', imageUrl: '', highlights: '', restaurants: '' });
         } catch (err) {
-            console.error(err);
-            alert("Package creation failed");
+            alert("Failed: " + JSON.stringify(err.response?.data || err.message));
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
-        <div className="bg-white shadow rounded-lg p-6 max-w-2xl">
-            <h2 className="text-2xl font-bold mb-6">Create New Package</h2>
-
+        <div className="bg-white p-8 rounded-lg shadow-xl max-w-2xl mx-auto">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">New Journey</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-                    name="packageName"
-                    placeholder="Package Name"
-                    value={pkg.packageName}
-                    onChange={handleChange}
-                    required
-                    className="w-full border p-3 rounded"
-                />
-
-                <textarea
-                    name="description"
-                    placeholder="Description"
-                    value={pkg.description}
-                    onChange={handleChange}
-                    required
-                    className="w-full border p-3 rounded"
-                />
-
-                <input
-                    type="number"
-                    name="price"
-                    placeholder="Price"
-                    value={pkg.price}
-                    onChange={handleChange}
-                    required
-                    className="w-full border p-3 rounded"
-                />
-
-                <input
-                    name="imageUrl"
-                    placeholder="Image URL"
-                    value={pkg.imageUrl}
-                    onChange={handleChange}
-                    required
-                    className="w-full border p-3 rounded"
-                />
-
-                <button className="bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700">
-                    Create Package
+                <input name="packageName" placeholder="Package Name" value={pkg.packageName} onChange={handleChange} required className="w-full border p-3 rounded" />
+                <input type="number" name="price" placeholder="Price" value={pkg.price} onChange={handleChange} required className="w-full border p-3 rounded" />
+                <textarea name="description" placeholder="Description" value={pkg.description} onChange={handleChange} required className="w-full border p-3 rounded" />
+                <input name="imageUrl" placeholder="Image URL" value={pkg.imageUrl} onChange={handleChange} required className="w-full border p-3 rounded" />
+                <input name="highlights" placeholder="Highlights" value={pkg.highlights} onChange={handleChange} className="w-full border p-3 rounded" />
+                <input name="restaurants" placeholder="Restaurants" value={pkg.restaurants} onChange={handleChange} className="w-full border p-3 rounded" />
+                <button disabled={loading} className="w-full bg-purple-600 text-white p-3 rounded font-bold">
+                    {loading ? "Publishing..." : "Publish Package"}
                 </button>
             </form>
         </div>
     );
 };
 
-/* ================= LAYOUT ================= */
 const VendorDashboardLayout = () => (
-    <div className="flex min-h-screen">
-        <aside className="w-64 bg-white shadow p-4">
+    <div className="flex min-h-screen bg-gray-100">
+        <aside className="w-64 bg-white shadow-lg p-6">
             <nav className="space-y-2">
-                <Link to="/vendor" className="block px-3 py-2 hover:bg-purple-50 rounded">Overview</Link>
-                <Link to="/vendor/create" className="block px-3 py-2 hover:bg-purple-50 rounded">New Package</Link>
-                <Link to="/vendor/bookings" className="block px-3 py-2 hover:bg-purple-50 rounded">Bookings</Link>
+                <Link to="/vendor" className="block p-3 hover:bg-purple-50 rounded font-bold">Overview</Link>
+                <Link to="/vendor/create" className="block p-3 hover:bg-purple-50 rounded font-bold">New Package</Link>
             </nav>
         </aside>
-        <main className="flex-1 p-6 bg-gray-100">
+        <main className="flex-1 p-10">
             <Outlet />
         </main>
     </div>
 );
 
-/* ================= ROUTES ================= */
 const VendorDashboard = () => (
     <Routes>
         <Route element={<VendorDashboardLayout />}>
             <Route index element={<VendorOverview />} />
             <Route path="create" element={<CreatePackage />} />
-            <Route path="bookings" element={<div>Bookings coming soon</div>} />
         </Route>
     </Routes>
 );

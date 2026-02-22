@@ -9,12 +9,10 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
         return <div className="p-10 text-center">Loading...</div>;
     }
 
-    // Not logged in
     if (!user || !user.token) {
         return <Navigate to="/login" state={{ from: location }} replace />;
     }
 
-    // Role check
     if (
         allowedRoles.length > 0 &&
         !allowedRoles.includes(user.userRole)

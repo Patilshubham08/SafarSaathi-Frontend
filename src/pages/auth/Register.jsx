@@ -1,133 +1,290 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
-import { UserPlus, Mail, Lock, User, Briefcase, Loader2 } from 'lucide-react';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import api from "../../api/axios";
 
-const Register = () => {
+export default function Register() {
+    const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
     const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        userRole: 'CUSTOMER' // Initialized as all-caps to match Java Enum
+        name: "",
+        email: "",
+        password: "",
+        userRole: "CUSTOMER"
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        
-        try {
-            // ✅ URL matches your backend log path: /api/users/register
-            await axios.post('http://localhost:8080/auth/register', formData);
+    const handleRegister = async () => {
+        setError(null);
+        setLoading(true);
 
-            
-            alert("Registration Successful! Redirecting to login...");
-            navigate('/login');
-        } catch (error) {
-            console.error("Registration Error:", error);
-            // Show the specific error message from the backend if available
-            alert(error.response?.data?.message || "Registration failed. Please check your details.");
+        try {
+            await api.post('/auth/register', formData);
+            setSuccess(true);
+
+            setTimeout(() => {
+                navigate("/login");
+            }, 1500);
+        } catch (err) {
+            setError(err.response?.data?.message || "Registration failed. Please try again.");
         } finally {
-            setIsSubmitting(false);
+            setLoading(false);
         }
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-50 p-6">
-            <div className="w-full max-w-lg bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100">
-                
-                <div className="text-center mb-8">
-                    <div className="inline-flex p-4 bg-blue-50 rounded-2xl mb-4 text-blue-600">
-                        <UserPlus size={32} />
-                    </div>
-                    <h2 className="text-3xl font-black text-gray-800 tracking-tight">Create Account</h2>
-                    <p className="text-gray-500 font-medium">Start your journey with Safar-Saathi</p>
-                </div>
+        <div style={page}>
+            <div style={overlay}></div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Full Name */}
-                    <div className="space-y-1">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Full Name</label>
-                        <div className="relative">
-                            <input 
-                                type="text" required
-                                className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 pl-12 transition-all"
-                                placeholder="Enter your name"
-                                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                            />
-                            <User className="absolute left-4 top-4 text-gray-400" size={20} />
-                        </div>
-                    </div>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1 }}
+                style={card}
+            >
+                {!success ? (
+                    <>
+                        <h2 style={title}>Create Account</h2>
+                        <p style={subtitle}>Join Safarsathi and start your journey</p>
 
-                    {/* Email */}
-                    <div className="space-y-1">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Email Address</label>
-                        <div className="relative">
-                            <input 
-                                type="email" required
-                                className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 pl-12 transition-all"
-                                placeholder="name@example.com"
-                                onChange={(e) => setFormData({...formData, email: e.target.value})}
-                            />
-                            <Mail className="absolute left-4 top-4 text-gray-400" size={20} />
-                        </div>
-                    </div>
-
-                    {/* Role Selection - CRITICAL FIX FOR 400 ERROR */}
-                    <div className="space-y-1">
-                        <label className="text-sm font-bold text-gray-700 ml-1">I want to...</label>
-                        <div className="relative">
-                            <select 
-                                className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 pl-12 appearance-none font-bold text-blue-600 cursor-pointer"
-                                value={formData.userRole}
-                                onChange={(e) => setFormData({...formData, userRole: e.target.value})}
+                        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+                            <div
+                                style={formData.userRole === 'CUSTOMER' ? activeRoleBtn : roleBtn}
+                                onClick={() => setFormData({ ...formData, userRole: 'CUSTOMER' })}
                             >
-                                {/* ✅ Values MUST be all-caps: CUSTOMER and VENDOR */}
-                                <option value="CUSTOMER">Book Trips (Customer)</option>
-                                <option value="VENDOR">Organize Trips (Vendor)</option>
-                            </select>
-                            <Briefcase className="absolute left-4 top-4 text-gray-400" size={20} />
+                                Traveler
+                            </div>
+                            <div
+                                style={formData.userRole === 'VENDOR' ? activeRoleBtn : roleBtn}
+                                onClick={() => setFormData({ ...formData, userRole: 'VENDOR' })}
+                            >
+                                Organizer
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Password */}
-                    <div className="space-y-1">
-                        <label className="text-sm font-bold text-gray-700 ml-1">Password</label>
-                        <div className="relative">
-                            <input 
-                                type="password" required
-                                className="w-full p-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-blue-500 pl-12 transition-all"
-                                placeholder="••••••••"
-                                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                        {error && <p style={errorStyle}>{error}</p>}
+
+                        <div style={field}>
+                            <input
+                                required
+                                style={input}
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                placeholder=" "
                             />
-                            <Lock className="absolute left-4 top-4 text-gray-400" size={20} />
+                            <label style={formData.name ? { ...label, ...activeLabel } : label}>Full Name</label>
                         </div>
-                    </div>
 
-                    <button 
-                        type="submit" 
-                        disabled={isSubmitting}
-                        className="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg hover:bg-blue-700 shadow-lg shadow-blue-100 transition-all flex justify-center items-center gap-2 disabled:bg-blue-300"
+                        <div style={field}>
+                            <input
+                                type="email"
+                                required
+                                style={input}
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                placeholder=" "
+                            />
+                            <label style={formData.email ? { ...label, ...activeLabel } : label}>Email Address</label>
+                        </div>
+
+                        <div style={field}>
+                            <input
+                                type="password"
+                                required
+                                style={input}
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                placeholder=" "
+                            />
+                            <label style={formData.password ? { ...label, ...activeLabel } : label}>Create Password</label>
+                        </div>
+
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            style={button}
+                            onClick={handleRegister}
+                            disabled={loading}
+                        >
+                            {loading ? "Creating Account..." : "Sign Up"}
+                        </motion.button>
+
+                        <p style={footer}>
+                            Already have an account? <span style={link} onClick={() => navigate('/login')}>Login</span>
+                        </p>
+                    </>
+                ) : (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ duration: 0.8 }}
+                        style={successBox}
                     >
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="animate-spin" size={20} />
-                                Creating Account...
-                            </>
-                        ) : (
-                            "Sign Up"
-                        )}
-                    </button>
-                </form>
-
-                <div className="mt-8 text-center text-sm font-semibold text-gray-500">
-                    Already part of the family?{' '}
-                    <Link to="/login" className="text-blue-600 hover:underline">Sign In</Link>
-                </div>
-            </div>
+                        Registration Successful
+                        <br />
+                        <span style={{ fontSize: "14px" }}>Redirecting to Login...</span>
+                    </motion.div>
+                )}
+            </motion.div>
         </div>
     );
+}
+
+
+const page = {
+    minHeight: "100vh",
+    paddingTop: "100px",
+    paddingBottom: "40px",
+    backgroundImage:
+        "url(https://images.unsplash.com/photo-1469854523086-cc02fe5d8800)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
 };
 
-export default Register;
+const overlay = {
+    position: "absolute",
+    inset: 0,
+    background:
+        "linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.8))",
+};
+
+const card = {
+    position: "relative",
+    zIndex: 2,
+    width: "420px",
+    padding: "40px",
+    borderRadius: "24px",
+    background: "rgba(255,255,255,0.12)",
+    backdropFilter: "blur(25px)",
+    boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+    color: "white",
+    border: "1px solid rgba(255,255,255,0.1)",
+};
+
+const title = {
+    fontSize: "30px",
+    textAlign: "center",
+    marginBottom: "5px",
+    fontWeight: "700",
+};
+
+const subtitle = {
+    textAlign: "center",
+    fontSize: "14px",
+    opacity: 0.8,
+    marginBottom: "30px",
+};
+
+const field = {
+    position: "relative",
+    marginBottom: "20px",
+};
+
+const input = {
+    width: "100%",
+    padding: "14px 18px",
+    borderRadius: "15px",
+    border: "1px solid rgba(255,255,255,0.3)",
+    background: "rgba(0,0,0,0.2)",
+    color: "white",
+    outline: "none",
+    fontSize: "14px",
+    transition: "all 0.3s ease",
+};
+
+const label = {
+    position: "absolute",
+    top: "50%",
+    left: "18px",
+    transform: "translateY(-50%)",
+    fontSize: "14px",
+    color: "rgba(255,255,255,0.6)",
+    pointerEvents: "none",
+    transition: "all 0.3s ease",
+};
+
+const activeLabel = {
+    top: "-10px",
+    left: "10px",
+    background: "#008cff",
+    padding: "2px 10px",
+    borderRadius: "6px",
+    fontSize: "11px",
+    color: "white",
+    fontWeight: "700",
+};
+
+const button = {
+    width: "100%",
+    padding: "15px",
+    borderRadius: "15px",
+    border: "none",
+    background: "linear-gradient(to right, #008cff, #005eff)",
+    color: "white",
+    fontWeight: "800",
+    textTransform: "uppercase",
+    letterSpacing: "1px",
+    cursor: "pointer",
+    fontSize: "15px",
+    marginTop: "15px",
+    boxShadow: "0 10px 20px rgba(0, 140, 255, 0.3)",
+};
+
+const footer = {
+    textAlign: "center",
+    fontSize: "14px",
+    marginTop: "25px",
+    opacity: 0.9,
+};
+
+const link = {
+    color: "#008cff",
+    fontWeight: "800",
+    cursor: "pointer",
+    textDecoration: "none",
+};
+
+const successBox = {
+    textAlign: "center",
+    fontSize: "22px",
+    fontWeight: "600",
+};
+
+const errorStyle = {
+    color: "#ff6b6b",
+    textAlign: "center",
+    marginBottom: "20px",
+    fontSize: "14px",
+    background: "rgba(255,107,107,0.1)",
+    padding: "10px",
+    borderRadius: "12px",
+    border: "1px solid rgba(255,107,107,0.2)",
+};
+
+const roleBtn = {
+    flex: 1,
+    padding: "12px",
+    background: "rgba(255,255,255,0.05)",
+    textAlign: "center",
+    borderRadius: "12px",
+    cursor: "pointer",
+    fontSize: "13px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    transition: "all 0.3s ease",
+    color: "white",
+};
+
+const activeRoleBtn = {
+    ...roleBtn,
+    background: "#008cff",
+    color: "white",
+    fontWeight: "700",
+    border: "1px solid #008cff",
+};

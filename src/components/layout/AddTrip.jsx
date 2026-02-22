@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 import { Plane, IndianRupee, ImageIcon, FileText } from 'lucide-react';
 
@@ -19,12 +19,10 @@ const AddTrip = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Adjust this URL to match your @RequestMapping for PackagesController
-            await axios.post('http://localhost:8080/api/packages', pkg);
+            await api.post('/packages', pkg);
             alert("Package added successfully!");
-            navigate('/admin'); // Redirect back to the dashboard
+            navigate('/admin');
         } catch (error) {
-            console.error("Error adding package:", error);
             alert("Failed to add package.");
         }
     };

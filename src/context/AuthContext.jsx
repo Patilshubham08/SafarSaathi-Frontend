@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import api from "../api/axios";
 
 const AuthContext = createContext(null);
 
@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage on refresh
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userRole = localStorage.getItem("userRole");
@@ -25,19 +24,16 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  // ✅ CLEAN LOGIN (NO OVER-VALIDATION)
   const login = async (email, password) => {
     try {
-      const response = await axios.post(
-        "http://localhost:8080/auth/login",
+      const response = await api.post(
+        "/auth/login",
         { email, password }
       );
 
-      console.log("RAW LOGIN RESPONSE:", response.data);
 
       const { token, userRole, name, userId } = response.data;
 
-      // STORE
       localStorage.setItem("token", token);
       localStorage.setItem("userRole", userRole);
       localStorage.setItem("userName", name);
@@ -47,7 +43,6 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true, userRole };
     } catch (error) {
-      console.error("Login failed:", error.response?.data || error.message);
       return { success: false };
     }
   };

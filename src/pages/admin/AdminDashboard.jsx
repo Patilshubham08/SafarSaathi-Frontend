@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link, Outlet } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/axios';
 import { Users, Package, LayoutDashboard, PlusCircle, Trash2, Edit3, ShieldCheck } from 'lucide-react';
-import AddTrip from './AddTrip';       
-import PackageList from './PackageList'; 
+import AddTrip from './AddTrip';
+import PackageList from './PackageList';
 
-// --- 1. Overview Component ---
 const AdminOverview = () => {
     const [stats, setStats] = useState({ users: 0, packages: 0 });
 
     useEffect(() => {
-        // Fetch quick counts for the dashboard cards
         const fetchStats = async () => {
             try {
                 const [uRes, pRes] = await Promise.all([
-                    axios.get('http://localhost:8080/api/users'),
-                    axios.get('http://localhost:8080/api/packages')
+                    api.get('/users'),
+                    api.get('/packages')
                 ]);
                 setStats({ users: uRes.data.length, packages: pRes.data.length });
-            } catch (err) { console.error("Stats fetch failed", err); }
+            } catch (err) { }
         };
         fetchStats();
     }, []);
@@ -29,9 +27,8 @@ const AdminOverview = () => {
                 <h3 className="text-2xl font-bold text-gray-800">Admin Command Center</h3>
                 <p className="text-gray-500">Monitor and manage the Safar-Saathi ecosystem.</p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* User Stats */}
                 <div className="bg-blue-600 p-6 rounded-2xl text-white shadow-lg shadow-blue-200">
                     <Users className="h-8 w-8 mb-4 opacity-80" />
                     <p className="text-sm font-medium uppercase tracking-wider opacity-80">Total Users</p>
@@ -39,7 +36,6 @@ const AdminOverview = () => {
                     <Link to="users" className="inline-block mt-4 text-sm font-bold bg-white/20 px-3 py-1 rounded hover:bg-white/30 transition">Manage Users →</Link>
                 </div>
 
-                {/* Package Stats */}
                 <div className="bg-purple-600 p-6 rounded-2xl text-white shadow-lg shadow-purple-200">
                     <Package className="h-8 w-8 mb-4 opacity-80" />
                     <p className="text-sm font-medium uppercase tracking-wider opacity-80">Active Packages</p>
@@ -50,7 +46,6 @@ const AdminOverview = () => {
                     </div>
                 </div>
 
-                {/* Security/Admin Role Info */}
                 <div className="bg-emerald-600 p-6 rounded-2xl text-white shadow-lg shadow-emerald-200">
                     <ShieldCheck className="h-8 w-8 mb-4 opacity-80" />
                     <p className="text-sm font-medium uppercase tracking-wider opacity-80">System Status</p>
@@ -62,7 +57,6 @@ const AdminOverview = () => {
     );
 };
 
-// --- 2. User Management Component ---
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -71,14 +65,14 @@ const UserManagement = () => {
     useEffect(() => { fetchUsers(); }, []);
 
     const fetchUsers = () => {
-        axios.get('http://localhost:8080/api/users')
+        api.get('/users')
             .then(res => setUsers(res.data))
-            .catch(err => console.error("Fetch failed", err));
+            .catch(err => { });
     };
 
     const handleDelete = async (id) => {
         if (window.confirm("Delete this user permanently?")) {
-            await axios.delete(`http://localhost:8080/api/users/${id}`);
+            await api.delete(`/users/${id}`);
             setUsers(users.filter(u => u.userId !== id));
         }
     };
@@ -107,10 +101,9 @@ const UserManagement = () => {
                                     <div className="text-sm text-gray-500">{user.email}</div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${
-                                        user.userRole === 'ADMIN' ? 'bg-purple-100 text-purple-700' : 
+                                    <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${user.userRole === 'ADMIN' ? 'bg-purple-100 text-purple-700' :
                                         user.userRole === 'VENDOR' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
-                                    }`}>
+                                        }`}>
                                         {user.userRole || 'CUSTOMER'}
                                     </span>
                                 </td>
@@ -128,7 +121,6 @@ const UserManagement = () => {
     );
 };
 
-// --- 3. Sidebar Layout ---
 const AdminDashboardLayout = () => (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
         <aside className="w-full md:w-64 bg-slate-900 text-white p-6">
@@ -159,7 +151,6 @@ const AdminDashboardLayout = () => (
     </div>
 );
 
-// --- 4. Main Route Config ---
 const AdminDashboard = () => (
     <Routes>
         <Route element={<AdminDashboardLayout />}>

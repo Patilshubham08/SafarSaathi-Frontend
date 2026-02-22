@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../../api/axios';
 import { useNavigate } from 'react-router-dom';
 
 const AddTrip = () => {
     const navigate = useNavigate();
 
-    // 1. State for form data and loading status
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         packageName: '',
         description: '',
         price: '',
         imageUrl: '',
-        vendorId: '' 
+        vendorId: ''
     });
 
     const handleChange = (e) => {
@@ -21,33 +20,30 @@ const AddTrip = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        // Basic Validation
+
         if (!formData.vendorId) {
             alert("Please enter a Vendor ID (Check User Management for your ID)");
             return;
         }
 
-        setLoading(true); // 👈 Start loading spinner effect
+        setLoading(true);
 
         try {
-            // URL: http://localhost:8080/api/packages/{vendorId}
-            await axios.post(`http://localhost:8080/api/packages/${formData.vendorId}`, {
+            await api.post(`/packages/${formData.vendorId}`, {
                 packageName: formData.packageName,
                 description: formData.description,
-                price: parseFloat(formData.price), // Ensure it's a number for Java Double
+                price: parseFloat(formData.price),
                 imageUrl: formData.imageUrl
             });
 
-            alert('Trip Package Published Successfully! ✈️');
-            navigate('/admin/packages'); // Redirect to list view
-            
+            alert('Trip Package Published Successfully!');
+            navigate('/admin/packages');
+
         } catch (error) {
             const errorMsg = error.response ? error.response.data : error.message;
-            console.error("400 Error details:", errorMsg);
             alert(`Failed to add trip: ${errorMsg}`);
         } finally {
-            setLoading(false); // 👈 Stop loading regardless of result
+            setLoading(false);
         }
     };
 
@@ -63,90 +59,83 @@ const AddTrip = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-                
-                {/* Package Name */}
+
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Package Name</label>
-                    <input 
-                        type="text" 
-                        name="packageName" 
-                        required 
+                    <input
+                        type="text"
+                        name="packageName"
+                        required
                         className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                         value={formData.packageName}
-                        onChange={handleChange} 
-                        placeholder="e.g. Romantic Kerala Backwaters" 
+                        onChange={handleChange}
+                        placeholder="e.g. Romantic Kerala Backwaters"
                     />
                 </div>
 
-                {/* Description */}
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Description</label>
-                    <textarea 
-                        name="description" 
-                        required 
+                    <textarea
+                        name="description"
+                        required
                         rows="4"
                         className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                         value={formData.description}
-                        onChange={handleChange} 
-                        placeholder="Describe the highlights, itinerary, and inclusions..." 
+                        onChange={handleChange}
+                        placeholder="Describe the highlights, itinerary, and inclusions..."
                     />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Price */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Price (₹)</label>
-                        <input 
-                            type="number" 
-                            name="price" 
-                            required 
+                        <input
+                            type="number"
+                            name="price"
+                            required
                             className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                             value={formData.price}
-                            onChange={handleChange} 
-                            placeholder="e.g. 25000" 
+                            onChange={handleChange}
+                            placeholder="e.g. 25000"
                         />
                     </div>
 
-                    {/* Vendor ID */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Vendor ID</label>
-                        <input 
-                            type="number" 
-                            name="vendorId" 
-                            required 
+                        <input
+                            type="number"
+                            name="vendorId"
+                            required
                             className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                             value={formData.vendorId}
-                            onChange={handleChange} 
-                            placeholder="Your User ID" 
+                            onChange={handleChange}
+                            placeholder="Your User ID"
                         />
                     </div>
                 </div>
 
-                {/* Image URL */}
                 <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Image Link (URL)</label>
-                    <input 
-                        type="text" 
-                        name="imageUrl" 
-                        required 
+                    <input
+                        type="text"
+                        name="imageUrl"
+                        required
                         className="w-full border border-gray-300 p-3 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                         value={formData.imageUrl}
-                        onChange={handleChange} 
-                        placeholder="https://example.com/image.jpg" 
+                        onChange={handleChange}
+                        placeholder="https://example.com/image.jpg"
                     />
                     <p className="text-xs text-gray-500 mt-1 italic">Use direct links for best results.</p>
                 </div>
 
-                {/* Submit Button */}
                 <div className="pt-4">
-                    <button 
-                        type="submit" 
+                    <button
+                        type="submit"
                         disabled={loading}
-                        className={`w-full flex justify-center items-center font-bold py-3 px-4 rounded-md shadow transition duration-200 ${
-                            loading 
-                            ? 'bg-blue-300 cursor-not-allowed' 
+                        className={`w-full flex justify-center items-center font-bold py-3 px-4 rounded-md shadow transition duration-200 ${loading
+                            ? 'bg-blue-300 cursor-not-allowed'
                             : 'bg-blue-600 hover:bg-blue-700 text-white active:transform active:scale-95'
-                        }`}
+                            }`}
                     >
                         {loading ? (
                             <>
